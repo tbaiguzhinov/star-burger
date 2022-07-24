@@ -12,6 +12,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import Serializer
 from rest_framework.serializers import CharField
 from rest_framework.serializers import IntegerField
+from rest_framework.renderers import JSONRenderer
 
 
 def banners_list_api(request):
@@ -88,12 +89,12 @@ class ProductsSerializer(Serializer):
     
 
 class OrderSerializer(ModelSerializer):
-    products = ProductsSerializer(many=True, allow_empty=False)
+    products = ProductsSerializer(many=True, allow_empty=False, write_only=True)
     
     class Meta:
         model = Order
         fields = '__all__'
-    
+
 
 @api_view(['POST'])
 def register_order(request):
@@ -113,4 +114,8 @@ def register_order(request):
         product = Product.objects.filter(pk=item['product']).get()
         for _ in range(item['quantity']):
             order.products.add(product)
-    return Response({})
+    
+    content = OrderSerializer(order).data
+
+    return Response(content)
+
