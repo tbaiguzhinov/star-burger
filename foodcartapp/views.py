@@ -6,9 +6,7 @@ from .models import Product, Order
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-import json
-
+from rest_framework import status
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -64,8 +62,24 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    print(request.data)
     order_content = request.data
+
+    if 'products' not in order_content:
+        content = {'products': 'Обязательное поле.'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+    if isinstance(order_content['products'], str):
+        content = {'products': 'Ожидался list со значениями, но был получен str.'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+    if order_content['products'] is None:
+        content = {'products': 'Это поле не может быть пустым.'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+    if not order_content['products']:
+        content = {'products': 'Этот список не может быть пустым.'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
     order = Order.objects.create(
         first_name = order_content['firstname'],
         last_name = order_content['lastname'],
