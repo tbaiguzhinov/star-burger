@@ -7,8 +7,12 @@ from .models import Product, Order
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.serializers import ValidationError
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import Serializer
+from rest_framework.serializers import CharField
+from rest_framework.serializers import IntegerField
 
-import phonenumbers
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -62,48 +66,50 @@ def product_list_api(request):
     })
 
 
+def validate(data):
+    for item in data['products']:
+        key = item['product']
+        if not Product.objects.filter(pk=key).exists():
+            error_message = f'The key {key} does not exist in \'products\''
+            errors.append(error_message)
+
+    if errors:
+        raise ValidationError(errors)
+
+
+class ProductsSerializer(Serializer):
+    product = IntegerField()
+    quantity = IntegerField()
+    
+    def validate_product(self, value):
+        if not Product.objects.filter(pk=value).exists():
+            raise ValidationError(f'Недопустимый первичный ключ {value}')
+        return value
+    
+
+class OrderSerializer(ModelSerializer):
+    products = ProductsSerializer(many=True, allow_empty=False)
+    
+    class Meta:
+        model = Order
+        fields = '__all__'
+    
+
 @api_view(['POST'])
 def register_order(request):
     order_content = request.data
-
-    if 'firstname' not in order_content or not order_content['firstname'] or not isinstance(order_content['firstname'], str):
-        content = {'error': 'They key \'firstname\' is not specified or not str.'}
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
-    if 'lastname' not in order_content or not order_content['lastname'] or not isinstance(order_content['lastname'], str):
-        content = {'error': 'They key \'lastname\' is not specified or not str.'}
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
-    if 'address' not in order_content or not order_content['address'] or not isinstance(order_content['address'], str):
-        content = {'error': 'They key \'firstname\' is not specified or not str.'}
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
-    if 'phonenumber' not in order_content or not order_content['phonenumber']:
-        content = {'error': 'The key \'phonenumber\' is not specified.'}
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
-    parsed_number = phonenumbers.parse(order_content['phonenumber'], "RU")
-    if not phonenumbers.is_valid_number(parsed_number):
-        content = {'error': 'Phone number is not correct.'}
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
-    if 'products' not in order_content or not order_contnet['products'] or not isinstance(order_content['products'], list):
-        content = {'error': 'Key \'products\' is not specified or not list.'}
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
-    for item in order_content['products']:
-        key = item['product']
-        if not Product.objects.filter(pk=key).exists():
-            content = {'error': f'Key {key} does not exist in \'products\'.'}
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+    
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
     order = Order.objects.create(
-        first_name = order_content['firstname'],
-        last_name = order_content['lastname'],
-        phone_number = order_content['phonenumber'],
-        address = order_content['address'],
+        firstname = serializer.validated_data['firstname'],
+        lastname = serializer.validated_data['lastname'],
+        phonenumber = serializer.validated_data['phonenumber'],
+        address = serializer.validated_data['address'],
     )
-    for item in order_content['products']:
+
+    for item in serializer.validated_data['products']:
         product = Product.objects.filter(pk=item['product']).get()
         for _ in range(item['quantity']):
             order.products.add(product)

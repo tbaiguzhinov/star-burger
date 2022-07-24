@@ -52,9 +52,9 @@ class ProductCategory(models.Model):
 
 
 class Order(models.Model):
-    first_name = models.CharField('Имя', max_length=50)
-    last_name = models.CharField('Фамилия', max_length=50)
-    phone_number = PhoneNumberField('Номер телефона', db_index=True)
+    firstname = models.CharField('Имя', max_length=50)
+    lastname = models.CharField('Фамилия', max_length=50)
+    phonenumber = PhoneNumberField('Номер телефона', db_index=True)
     address = models.CharField('Адрес доставки', max_length=100)
 
     class Meta:
