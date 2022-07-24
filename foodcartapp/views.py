@@ -8,6 +8,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+import phonenumbers
+
 def banners_list_api(request):
     # FIXME move data to db?
     return JsonResponse([
@@ -64,21 +66,36 @@ def product_list_api(request):
 def register_order(request):
     order_content = request.data
 
-    if 'products' not in order_content:
-        content = {'products': 'Обязательное поле.'}
+    if 'firstname' not in order_content or not order_content['firstname'] or not isinstance(order_content['firstname'], str):
+        content = {'error': 'They key \'firstname\' is not specified or not str.'}
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-    if isinstance(order_content['products'], str):
-        content = {'products': 'Ожидался list со значениями, но был получен str.'}
+    if 'lastname' not in order_content or not order_content['lastname'] or not isinstance(order_content['lastname'], str):
+        content = {'error': 'They key \'lastname\' is not specified or not str.'}
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-    if order_content['products'] is None:
-        content = {'products': 'Это поле не может быть пустым.'}
+    if 'address' not in order_content or not order_content['address'] or not isinstance(order_content['address'], str):
+        content = {'error': 'They key \'firstname\' is not specified or not str.'}
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-    if not order_content['products']:
-        content = {'products': 'Этот список не может быть пустым.'}
+    if 'phonenumber' not in order_content or not order_content['phonenumber']:
+        content = {'error': 'The key \'phonenumber\' is not specified.'}
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+    parsed_number = phonenumbers.parse(order_content['phonenumber'], "RU")
+    if not phonenumbers.is_valid_number(parsed_number):
+        content = {'error': 'Phone number is not correct.'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+    if 'products' not in order_content or not order_contnet['products'] or not isinstance(order_content['products'], list):
+        content = {'error': 'Key \'products\' is not specified or not list.'}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+    for item in order_content['products']:
+        key = item['product']
+        if not Product.objects.filter(pk=key).exists():
+            content = {'error': f'Key {key} does not exist in \'products\'.'}
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     order = Order.objects.create(
         first_name = order_content['firstname'],
