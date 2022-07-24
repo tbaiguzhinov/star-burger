@@ -10,7 +10,6 @@ from django.contrib.auth import views as auth_views
 
 from foodcartapp.models import Product, Restaurant
 
-
 class Login(forms.Form):
     username = forms.CharField(
         label='Логин', max_length=75, required=True,

@@ -1,7 +1,8 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
-
+from phonenumber_field.modelfields import PhoneNumberField
+ 
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
@@ -50,6 +51,20 @@ class ProductCategory(models.Model):
         return self.name
 
 
+class Order(models.Model):
+    first_name = models.CharField('Имя', max_length=50)
+    last_name = models.CharField('Фамилия', max_length=50)
+    phone_number = PhoneNumberField('Номер телефона', db_index=True)
+    address = models.CharField('Адрес доставки', max_length=100)
+
+    class Meta:
+        verbose_name = 'заказ'
+        verbose_name_plural = 'заказы'
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name} {self.id}'
+
+
 class Product(models.Model):
     name = models.CharField(
         'название',
@@ -82,6 +97,14 @@ class Product(models.Model):
         max_length=200,
         blank=True,
     )
+    order = models.ForeignKey(
+        Order,
+        verbose_name='заказ',
+        related_name='products',
+        on_delete=models.DO_NOTHING,
+        null=True,
+    )
+
 
     objects = ProductQuerySet.as_manager()
 
@@ -97,7 +120,7 @@ class RestaurantMenuItem(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
         related_name='menu_items',
-        verbose_name="ресторан",
+        verbose_name='ресторан',
         on_delete=models.CASCADE,
     )
     product = models.ForeignKey(
@@ -120,4 +143,4 @@ class RestaurantMenuItem(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.restaurant.name} - {self.product.name}"
+        return f'{self.restaurant.name} - {self.product.name}'

@@ -7,6 +7,7 @@ from .models import Product
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
+from .models import Order
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -104,3 +105,19 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(ProductCategory)
 class ProductAdmin(admin.ModelAdmin):
     pass
+
+
+class ProductInline(admin.TabularInline):
+    fields = ('name', 'price')
+    readonly_fields = ('name', 'price')
+    model = Product
+
+    def get_extra(self, *args, **kwargs):
+        return 1
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = [
+        ProductInline,
+    ]
