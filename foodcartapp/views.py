@@ -112,10 +112,9 @@ def register_order(request):
 
     for item in serializer.validated_data['products']:
         product = Product.objects.filter(pk=item['product']).get()
-        for _ in range(item['quantity']):
-            order.products.add(product)
+        product.quantity = item['quantity']
+        order.products.add(product)
     
     content = OrderSerializer(order).data
 
     return Response(content)
-

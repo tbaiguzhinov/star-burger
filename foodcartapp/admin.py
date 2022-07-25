@@ -108,7 +108,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class ProductInline(admin.TabularInline):
-    fields = ('name', 'price')
+    fields = ('name', 'quantity', 'price')
     readonly_fields = ('name', 'price')
     model = Product
 
