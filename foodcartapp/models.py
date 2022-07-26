@@ -38,9 +38,6 @@ class ProductQuerySet(models.QuerySet):
         )
         return self.filter(pk__in=products)
 
-    def get_total(self):
-        return self.annotate(total=F('price')*F('quantity'))
-
 
 class ProductCategory(models.Model):
     name = models.CharField(
@@ -59,7 +56,7 @@ class ProductCategory(models.Model):
 class OrderQuerySet(models.QuerySet):
     
     def get_total(self):
-        return self.annotate(total=Sum(F('products__price')*F('products__quantity')))
+        return self.annotate(total=Sum(F('orderitems__price')*F('orderitems__quantity')))
 
 
 class Order(models.Model):
@@ -110,19 +107,6 @@ class Product(models.Model):
         max_length=200,
         blank=True,
     )
-    quantity = models.IntegerField(
-        'количество',
-        blank=True,
-        default=1,
-    )
-    order = models.ForeignKey(
-        Order,
-        verbose_name='заказ',
-        related_name='products',
-        on_delete=models.DO_NOTHING,
-        null=True,
-    )
-
 
     objects = ProductQuerySet.as_manager()
 
@@ -132,6 +116,37 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class OrderItem(models.Model):
+    product = models.ForeignKey(
+        Product,
+        verbose_name="товар",
+        related_name='orderitems',
+        on_delete=models.CASCADE,
+    )
+    order = models.ForeignKey(
+        Order,
+        verbose_name='заказ',
+        related_name='orderitems',
+        on_delete=models.CASCADE,
+    )
+    price = models.DecimalField(
+        "Цена товара",
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+    quantity = models.IntegerField(
+        'Количество',
+    )
+
+    class Meta:
+        verbose_name = 'пункт заказа'
+        verbose_name_plural = 'пункты заказа'
+
+    def __str__(self):
+        return f'{self.product} - {self.order}'
 
 
 class RestaurantMenuItem(models.Model):

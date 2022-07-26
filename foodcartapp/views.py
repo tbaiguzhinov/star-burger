@@ -2,17 +2,14 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 
 
-from .models import Product, Order
+from .models import Product, Order, OrderItem
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.serializers import ValidationError
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import Serializer
-from rest_framework.serializers import CharField
 from rest_framework.serializers import IntegerField
-from rest_framework.renderers import JSONRenderer
 
 
 def banners_list_api(request):
@@ -98,7 +95,6 @@ class OrderSerializer(ModelSerializer):
 
 @api_view(['POST'])
 def register_order(request):
-    order_content = request.data
     
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -112,8 +108,12 @@ def register_order(request):
 
     for item in serializer.validated_data['products']:
         product = Product.objects.filter(pk=item['product']).get()
-        product.quantity = item['quantity']
-        order.products.add(product)
+        OrderItem.objects.create(
+            product = product,
+            order = order,
+            price = product.price,
+            quantity = item['quantity'],
+        )
     
     content = OrderSerializer(order).data
 
