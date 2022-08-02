@@ -64,6 +64,19 @@ class Order(models.Model):
     lastname = models.CharField('Фамилия', max_length=50)
     phonenumber = PhoneNumberField('Номер телефона', db_index=True)
     address = models.CharField('Адрес доставки', max_length=100)
+    STATUS_CHOICES = [
+        ("1", 'Необработанный'),
+        ("2", 'В сборке'),
+        ("3", 'Передан в доставку'),
+        ("4", 'Завершен'),
+    ]
+    status = models.CharField(
+        'Статус',
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default="1",
+        db_index=True,
+    )
 
     objects = OrderQuerySet.as_manager()
 
