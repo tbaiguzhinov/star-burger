@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.shortcuts import redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Product
 from .models import ProductCategory
@@ -121,3 +123,13 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderItemsInline,
     ]
+
+    def response_change(self, request, obj):
+        res = super(OrderAdmin, self).response_change(request, obj)
+        if "next" in request.GET and url_has_allowed_host_and_scheme(
+            request.GET['next'],
+            allowed_hosts=None,
+            ):
+            return redirect(request.GET['next'])
+        else:
+            return res
