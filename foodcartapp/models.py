@@ -5,7 +5,12 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models import F, Sum
 
- 
+import requests
+from geopy import distance
+
+from django.conf import settings
+
+
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
@@ -54,6 +59,33 @@ class ProductCategory(models.Model):
         return self.name
 
 
+def get_coordinates(address):
+    apikey = settings.YANDEX_KEY
+    response = requests.get(
+        "https://geocode-maps.yandex.ru/1.x",
+        params={
+            "geocode": address,
+            "apikey": apikey,
+            "format": "json",
+        }
+    )
+    response.raise_for_status()
+    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+
+    if not found_places:
+        return None
+
+    most_relevant = found_places[0]
+    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    return lon, lat
+
+
+def measure_distance(coordinates1, coordinates2):
+    coordinates1 = (coordinates1[1], coordinates1[0])
+    coordinates2 = (coordinates2[1], coordinates2[0])
+    return distance.distance(coordinates1, coordinates2).km
+
+
 class OrderQuerySet(models.QuerySet):
     
     def get_total(self):
@@ -62,12 +94,25 @@ class OrderQuerySet(models.QuerySet):
     def get_restaurants(self):
         rest_menu_items = RestaurantMenuItem.objects.filter(availability=True).prefetch_related('product').prefetch_related('restaurant')
         for order in self:
+            order_coordinates = get_coordinates(order.address)
+            if not order_coordinates:
+                continue
             order_items = order.orderitems.prefetch_related('product')
             restaurants_per_item = []
             for order_item in order_items.iterator():
                 restaurants_per_item.append([rest_menu_item.restaurant for rest_menu_item in rest_menu_items.iterator() if rest_menu_item.product.id == order_item.product.id])
             available_restaurants = set(restaurants_per_item[0]).intersection(*restaurants_per_item)
-            order.restaurants = list(available_restaurants)
+            restaurants_with_disntance = []
+            for restaurant in available_restaurants:
+                rest_coordinates = get_coordinates(restaurant.address)
+                distance = measure_distance(order_coordinates, rest_coordinates)
+                restaurants_with_disntance.append(
+                    {
+                        'name': restaurant.name,
+                        'distance': distance
+                    }
+                )
+            order.restaurants = sorted(restaurants_with_disntance, key=lambda restaurant: restaurant['distance']) 
         return self
 
 

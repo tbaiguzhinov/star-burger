@@ -36,15 +36,17 @@
         <td>{{order.address}}</td>
         <td>{{order.comment}}</td>
         <td>
-          {% if not order.preparing_restaurant %}
+          {% if not order.preparing_restaurant and order.restaurants %}
             <details>
               <summary>Может быть приготовлен ресторанами:</summary>
               <ol>
               {% for restaurant in order.restaurants %}
-                <il>{{restaurant}}</il>
+                <il>{{restaurant.name}} - {{restaurant.distance}}</il>
               {% endfor %}    
               </ol>
             </details>
+          {% elif not order.restaurants %}
+            Ошибка определения координат
           {% else %}
             Готовит {{order.preparing_restaurant}}
           {% endif %}
