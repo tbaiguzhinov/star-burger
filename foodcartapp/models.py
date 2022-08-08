@@ -59,6 +59,17 @@ class OrderQuerySet(models.QuerySet):
     def get_total(self):
         return self.annotate(total=Sum(F('orderitems__price')*F('orderitems__quantity')))
 
+    def get_restaurants(self):
+        rest_menu_items = RestaurantMenuItem.objects.filter(availability=True).prefetch_related('product').prefetch_related('restaurant')
+        for order in self:
+            order_items = order.orderitems.prefetch_related('product')
+            restaurants_per_item = []
+            for order_item in order_items.iterator():
+                restaurants_per_item.append([rest_menu_item.restaurant for rest_menu_item in rest_menu_items.iterator() if rest_menu_item.product.id == order_item.product.id])
+            available_restaurants = set(restaurants_per_item[0]).intersection(*restaurants_per_item)
+            order.restaurants = list(available_restaurants)
+        return self
+
 
 class Order(models.Model):
     firstname = models.CharField('Имя', max_length=50)
@@ -110,6 +121,14 @@ class Order(models.Model):
         choices=PAYMENT_CHOICES,
         default="1",
         db_index=True,
+    )
+    preparing_restaurant = models.ForeignKey(
+        'Restaurant',
+        related_name='orders',
+        verbose_name='Готовит ресторан:',
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
     )
 
     objects = OrderQuerySet.as_manager()

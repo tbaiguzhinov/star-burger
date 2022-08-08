@@ -1,3 +1,4 @@
+from binascii import Incomplete
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -11,7 +12,7 @@ from django.db.models import Sum
 
 from decimal import Decimal
 
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
 
 class Login(forms.Form):
     username = forms.CharField(
@@ -99,8 +100,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.exclude(status=4).prefetch_related('orderitems').get_total()
-       
+    orders = Order.objects.exclude(status=4).order_by('status').prefetch_related('orderitems').get_total().get_restaurants()
     return render(request, template_name='order_items.html', context={
-        "order_items": orders,
+        "orders": orders,
     })
