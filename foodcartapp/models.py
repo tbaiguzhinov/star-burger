@@ -10,6 +10,8 @@ from geopy import distance
 
 from django.conf import settings
 
+from locations.models import Location
+
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -60,6 +62,12 @@ class ProductCategory(models.Model):
 
 
 def get_coordinates(address):
+    try:
+        db_location = Location.objects.get(address=address)
+        return (db_location.lon, db_location.lat)
+    except Location.DoesNotExist:
+        pass
+
     apikey = settings.YANDEX_KEY
     response = requests.get(
         "https://geocode-maps.yandex.ru/1.x",
@@ -77,6 +85,12 @@ def get_coordinates(address):
 
     most_relevant = found_places[0]
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    
+    Location.objects.create(
+        address=address,
+        lon=lon,
+        lat=lat,
+    )
     return lon, lat
 
 
