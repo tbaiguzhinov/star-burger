@@ -1,14 +1,11 @@
-from django.db import models
-from django.core.validators import MinValueValidator
-from django.utils import timezone
-
-from phonenumber_field.modelfields import PhoneNumberField
-from django.db.models import F, Sum
-
 import requests
-from geopy import distance
-
 from django.conf import settings
+from django.core.validators import MinValueValidator
+from django.db import models
+from django.db.models import F, Sum
+from django.utils import timezone
+from geopy import distance
+from phonenumber_field.modelfields import PhoneNumberField
 
 from locations.models import Location
 
@@ -78,14 +75,16 @@ def get_coordinates(address):
         }
     )
     response.raise_for_status()
-    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+    found_places = response.json()['response']['GeoObjectCollection'][
+        'featureMember'
+    ]
 
     if not found_places:
         return None
 
     most_relevant = found_places[0]
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
-    
+
     Location.objects.create(
         address=address,
         lon=lon,
@@ -101,12 +100,16 @@ def measure_distance(coordinates1, coordinates2):
 
 
 class OrderQuerySet(models.QuerySet):
-    
+
     def get_total(self):
-        return self.annotate(total=Sum(F('orderitems__price')*F('orderitems__quantity')))
+        return self.annotate(
+            total=Sum(F('orderitems__price')*F('orderitems__quantity'))
+        )
 
     def get_restaurants(self):
-        rest_menu_items = RestaurantMenuItem.objects.filter(availability=True).prefetch_related('product').prefetch_related('restaurant')
+        rest_items = RestaurantMenuItem.objects.filter(
+            availability=True
+        ).prefetch_related('product').prefetch_related('restaurant')
         for order in self:
             order_coordinates = get_coordinates(order.address)
             if not order_coordinates:
@@ -114,19 +117,29 @@ class OrderQuerySet(models.QuerySet):
             order_items = order.orderitems.prefetch_related('product')
             restaurants_per_item = []
             for order_item in order_items.iterator():
-                restaurants_per_item.append([rest_menu_item.restaurant for rest_menu_item in rest_menu_items.iterator() if rest_menu_item.product.id == order_item.product.id])
-            available_restaurants = set(restaurants_per_item[0]).intersection(*restaurants_per_item)
+                restaurants_per_item.append([
+                    rest_item.restaurant for rest_item in rest_items.iterator()
+                    if rest_item.product.id == order_item.product.id
+                ])
+            available_restaurants = set(restaurants_per_item[0]).intersection(
+                *restaurants_per_item
+            )
             restaurants_with_disntance = []
             for restaurant in available_restaurants:
                 rest_coordinates = get_coordinates(restaurant.address)
-                distance = measure_distance(order_coordinates, rest_coordinates)
+                distance = measure_distance(
+                    order_coordinates, rest_coordinates
+                )
                 restaurants_with_disntance.append(
                     {
                         'name': restaurant.name,
                         'distance': distance
                     }
                 )
-            order.restaurants = sorted(restaurants_with_disntance, key=lambda restaurant: restaurant['distance']) 
+            order.restaurants = sorted(
+                restaurants_with_disntance,
+                key=lambda restaurant: restaurant['distance']
+            )
         return self
 
 

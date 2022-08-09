@@ -1,17 +1,12 @@
+from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
-
-
-from .models import Product, Order, OrderItem
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
-from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import Serializer
-from rest_framework.serializers import IntegerField
+from rest_framework.serializers import (IntegerField, ModelSerializer,
+                                        Serializer, ValidationError)
 
-from django.db import transaction
+from .models import Order, OrderItem, Product
 
 
 def banners_list_api(request):
@@ -67,6 +62,7 @@ def product_list_api(request):
 
 
 def validate(data):
+    errors = []
     for item in data['products']:
         key = item['product']
         if not Product.objects.filter(pk=key).exists():
@@ -80,16 +76,20 @@ def validate(data):
 class ProductsSerializer(Serializer):
     product = IntegerField()
     quantity = IntegerField()
-    
+
     def validate_product(self, value):
         if not Product.objects.filter(pk=value).exists():
             raise ValidationError(f'Недопустимый первичный ключ {value}')
         return value
-    
+
 
 class OrderSerializer(ModelSerializer):
-    products = ProductsSerializer(many=True, allow_empty=False, write_only=True)
-    
+    products = ProductsSerializer(
+        many=True,
+        allow_empty=False,
+        write_only=True
+    )
+
     class Meta:
         model = Order
         fields = '__all__'
@@ -98,26 +98,26 @@ class OrderSerializer(ModelSerializer):
 @api_view(['POST'])
 @transaction.atomic
 def register_order(request):
-    
+
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
     order = Order.objects.create(
-        firstname = serializer.validated_data['firstname'],
-        lastname = serializer.validated_data['lastname'],
-        phonenumber = serializer.validated_data['phonenumber'],
-        address = serializer.validated_data['address'],
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        phonenumber=serializer.validated_data['phonenumber'],
+        address=serializer.validated_data['address'],
     )
 
     for item in serializer.validated_data['products']:
         product = Product.objects.filter(pk=item['product']).get()
         OrderItem.objects.create(
-            product = product,
-            order = order,
-            price = product.price,
-            quantity = item['quantity'],
+            product=product,
+            order=order,
+            price=product.price,
+            quantity=item['quantity'],
         )
-    
+
     content = OrderSerializer(order).data
 
     return Response(content)
