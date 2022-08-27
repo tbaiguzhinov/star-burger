@@ -144,16 +144,22 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
-    firstname = models.CharField('Имя', max_length=50)
-    lastname = models.CharField('Фамилия', max_length=50)
-    phonenumber = PhoneNumberField('Номер телефона', db_index=True)
-    address = models.CharField('Адрес доставки', max_length=100)
     STATUS_CHOICES = [
         ("1", 'Необработанный'),
         ("2", 'В сборке'),
         ("3", 'Передан в доставку'),
         ("4", 'Завершен'),
     ]
+    PAYMENT_CHOICES = [
+        ("1", 'Не выбрано'),
+        ("2", 'Наличными'),
+        ("3", 'Электронно'),
+    ]
+
+    firstname = models.CharField('Имя', max_length=50)
+    lastname = models.CharField('Фамилия', max_length=50)
+    phonenumber = PhoneNumberField('Номер телефона', db_index=True)
+    address = models.CharField('Адрес доставки', max_length=100)
     status = models.CharField(
         'Статус',
         max_length=50,
@@ -182,11 +188,6 @@ class Order(models.Model):
         null=True,
         db_index=True,
     )
-    PAYMENT_CHOICES = [
-        ("1", 'Не выбрано'),
-        ("2", 'Наличными'),
-        ("3", 'Электронно'),
-    ]
     payment_option = models.CharField(
         'Способ оплаты',
         max_length=50,
