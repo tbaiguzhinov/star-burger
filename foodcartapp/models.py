@@ -57,7 +57,7 @@ class ProductCategory(models.Model):
 
 class OrderQuerySet(models.QuerySet):
 
-    def get_total(self):
+    def get_order_value(self):
         return self.annotate(
             total=Sum(F('items__price')*F('items__quantity'))
         )
