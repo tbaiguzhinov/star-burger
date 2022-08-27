@@ -98,7 +98,7 @@ def view_orders(request):
     orders = Order.objects.exclude(
         status=4
     ).order_by('status').prefetch_related(
-        'orderitems'
+        'items'
         ).get_total().get_restaurants()
     return render(request, template_name='order_items.html', context={
         "orders": orders,

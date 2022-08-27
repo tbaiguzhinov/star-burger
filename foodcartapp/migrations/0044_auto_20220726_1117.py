@@ -8,7 +8,7 @@ def calculate_order_items(apps, schema_editor):
     OrderItem = apps.get_model('foodcartapp', 'OrderItem')
 
     for order in Order.objects.all():
-        if not order.orderitems:
+        if not order.items:
             for product in order.products:
                 OrderItem.objects.create(
                     product = product,

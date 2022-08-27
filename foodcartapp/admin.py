@@ -111,7 +111,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
     pass
 
 
-class OrderItemsInline(admin.TabularInline):
+class ItemsInline(admin.TabularInline):
     fields = ('product', 'quantity', 'price')
     model = OrderItem
 
@@ -122,7 +122,7 @@ class OrderItemsInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [
-        OrderItemsInline,
+        ItemsInline,
     ]
 
     def response_change(self, request, obj):

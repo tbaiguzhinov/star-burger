@@ -103,7 +103,7 @@ class OrderQuerySet(models.QuerySet):
 
     def get_total(self):
         return self.annotate(
-            total=Sum(F('orderitems__price')*F('orderitems__quantity'))
+            total=Sum(F('items__price')*F('items__quantity'))
         )
 
     def get_restaurants(self):
@@ -114,7 +114,7 @@ class OrderQuerySet(models.QuerySet):
             order_coordinates = get_coordinates(order.address)
             if not order_coordinates:
                 continue
-            order_items = order.orderitems.prefetch_related('product')
+            order_items = order.items.prefetch_related('product')
             restaurants_per_item = []
             for order_item in order_items.iterator():
                 restaurants_per_item.append([
@@ -260,13 +260,13 @@ class OrderItem(models.Model):
     product = models.ForeignKey(
         Product,
         verbose_name="товар",
-        related_name='orderitems',
+        related_name='items',
         on_delete=models.CASCADE,
     )
     order = models.ForeignKey(
         Order,
         verbose_name='заказ',
-        related_name='orderitems',
+        related_name='items',
         on_delete=models.CASCADE,
     )
     price = models.DecimalField(
