@@ -6,9 +6,9 @@ from geopy import distance
 
 
 def measure_distance(coordinates1, coordinates2):
-    coordinates1 = (coordinates1[1], coordinates1[0])
-    coordinates2 = (coordinates2[1], coordinates2[0])
-    return distance.distance(coordinates1, coordinates2).km
+    lon1, lat1 = coordinates1
+    lon2, lat2 = coordinates2
+    return distance.distance((lat1, lon1), (lat2, lon2)).km
 
 
 def get_coordinates(address):
