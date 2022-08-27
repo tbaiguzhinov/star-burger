@@ -1,12 +1,10 @@
-import requests
-from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
-from locations.models import Location, measure_distance
+from locations.models import get_coordinates, measure_distance
 
 
 class Restaurant(models.Model):
@@ -55,41 +53,6 @@ class ProductCategory(models.Model):
 
     def __str__(self):
         return self.name
-
-
-def get_coordinates(address):
-    try:
-        db_location = Location.objects.get(address=address)
-        return (db_location.lon, db_location.lat)
-    except Location.DoesNotExist:
-        pass
-
-    apikey = settings.YANDEX_KEY
-    response = requests.get(
-        "https://geocode-maps.yandex.ru/1.x",
-        params={
-            "geocode": address,
-            "apikey": apikey,
-            "format": "json",
-        }
-    )
-    response.raise_for_status()
-    found_places = response.json()['response']['GeoObjectCollection'][
-        'featureMember'
-    ]
-
-    if not found_places:
-        return None
-
-    most_relevant = found_places[0]
-    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
-
-    Location.objects.create(
-        address=address,
-        lon=lon,
-        lat=lat,
-    )
-    return lon, lat
 
 
 class OrderQuerySet(models.QuerySet):
