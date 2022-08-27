@@ -277,6 +277,7 @@ class OrderItem(models.Model):
     )
     quantity = models.IntegerField(
         'Количество',
+        validators=[MinValueValidator(1)],
     )
 
     class Meta:
