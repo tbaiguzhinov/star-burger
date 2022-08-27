@@ -1,5 +1,12 @@
 from django.db import models
 from django.utils import timezone
+from geopy import distance
+
+
+def measure_distance(coordinates1, coordinates2):
+    coordinates1 = (coordinates1[1], coordinates1[0])
+    coordinates2 = (coordinates2[1], coordinates2[0])
+    return distance.distance(coordinates1, coordinates2).km
 
 
 class Location(models.Model):

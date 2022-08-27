@@ -4,10 +4,9 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
-from geopy import distance
 from phonenumber_field.modelfields import PhoneNumberField
 
-from locations.models import Location
+from locations.models import Location, measure_distance
 
 
 class Restaurant(models.Model):
@@ -91,12 +90,6 @@ def get_coordinates(address):
         lat=lat,
     )
     return lon, lat
-
-
-def measure_distance(coordinates1, coordinates2):
-    coordinates1 = (coordinates1[1], coordinates1[0])
-    coordinates2 = (coordinates2[1], coordinates2[0])
-    return distance.distance(coordinates1, coordinates2).km
 
 
 class OrderQuerySet(models.QuerySet):
