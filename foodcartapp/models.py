@@ -62,7 +62,7 @@ class OrderQuerySet(models.QuerySet):
             total=Sum(F('items__price')*F('items__quantity'))
         )
 
-    def get_restaurants(self):
+    def get_closest_restaurants(self):
         rest_items = RestaurantMenuItem.objects.filter(
             availability=True
         ).prefetch_related('product').prefetch_related('restaurant')
@@ -80,20 +80,20 @@ class OrderQuerySet(models.QuerySet):
             available_restaurants = set(restaurants_per_item[0]).intersection(
                 *restaurants_per_item
             )
-            restaurants_with_disntance = []
+            restaurants_with_distance = []
             for restaurant in available_restaurants:
                 rest_coordinates = get_coordinates(restaurant.address)
                 distance = measure_distance(
                     order_coordinates, rest_coordinates
                 )
-                restaurants_with_disntance.append(
+                restaurants_with_distance.append(
                     {
                         'name': restaurant.name,
                         'distance': distance
                     }
                 )
             order.restaurants = sorted(
-                restaurants_with_disntance,
+                restaurants_with_distance,
                 key=lambda restaurant: restaurant['distance']
             )
         return self

@@ -99,7 +99,7 @@ def view_orders(request):
         status=4
     ).order_by('status').prefetch_related(
         'items'
-        ).get_order_value().find_available_restaurants()
+        ).get_order_value().get_closest_restaurants()
     return render(request, template_name='order_items.html', context={
         "orders": orders,
     })
