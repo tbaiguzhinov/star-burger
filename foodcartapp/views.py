@@ -110,7 +110,7 @@ def register_order(request):
     )
 
     for item in serializer.validated_data['products']:
-        product = Product.objects.filter(pk=item['product']).get()
+        product = Product.objects.get(pk=item['product'])
         OrderItem.objects.create(
             product=product,
             order=order,
