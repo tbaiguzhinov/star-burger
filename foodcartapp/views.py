@@ -109,14 +109,18 @@ def register_order(request):
         address=serializer.validated_data['address'],
     )
 
-    for item in serializer.validated_data['products']:
-        product = Product.objects.get(pk=item['product'])
-        OrderItem.objects.create(
-            product=product,
+    item_fields = serializer.validated_data['products']
+
+    order_items = [
+        OrderItem(
+            product=Product.objects.get(pk=item_field['product']),
             order=order,
-            price=product.price,
-            quantity=item['quantity'],
-        )
+            price=Product.objects.get(pk=item_field['product']).price,
+            quantity=item_field['quantity'],
+        ) for item_field in item_fields
+    ]
+
+    OrderItem.objects.bulk_create(order_items)
 
     content = OrderSerializer(order).data
 
