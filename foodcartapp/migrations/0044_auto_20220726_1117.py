@@ -7,15 +7,18 @@ def calculate_order_items(apps, schema_editor):
     Order = apps.get_model('foodcartapp', 'Order')
     OrderItem = apps.get_model('foodcartapp', 'OrderItem')
 
-    for order in Order.objects.all():
-        if not order.items:
-            for product in order.products:
-                OrderItem.objects.create(
-                    product = product,
-                    order = order,
-                    price = product.price,
-                    quantity = product.quantity,
-                )
+    orders = Order.objects.all()
+
+    for order in orders.iterator():
+        if order.items:
+            continue
+        for product in order.products:
+            OrderItem.objects.create(
+                product = product,
+                order = order,
+                price = product.price,
+                quantity = product.quantity,
+            )
 
 
 class Migration(migrations.Migration):
