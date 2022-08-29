@@ -56,9 +56,13 @@ class Location(models.Model):
     )
     lon = models.FloatField(
         'Долгота',
+        null=True,
+        blank=True,
     )
     lat = models.FloatField(
         'Широта',
+        null=True,
+        blank=True,
     )
     geocoder_req_date = models.DateTimeField(
         'Дата последнего запроса к геокодеру',
