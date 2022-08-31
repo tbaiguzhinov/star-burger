@@ -4,7 +4,7 @@ from django.db.models import F, Sum
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
-from locations.models import get_coordinates, measure_distance
+from locations.distance_operations import get_coordinates, measure_distance
 
 
 class Restaurant(models.Model):
