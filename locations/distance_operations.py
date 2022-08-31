@@ -13,7 +13,7 @@ def measure_distance(coordinates1, coordinates2):
 
 def get_coordinates(address, locations):
     try:
-        db_location = Location.objects.get(address=address)
+        db_location = locations.get(address=address)
         return (db_location.lon, db_location.lat)
     except Location.DoesNotExist:
         pass
