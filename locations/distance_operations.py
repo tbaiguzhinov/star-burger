@@ -11,7 +11,7 @@ def measure_distance(coordinates1, coordinates2):
     return distance.distance((lat1, lon1), (lat2, lon2)).km
 
 
-def get_coordinates(address):
+def get_coordinates(address, locations):
     try:
         db_location = Location.objects.get(address=address)
         return (db_location.lon, db_location.lat)

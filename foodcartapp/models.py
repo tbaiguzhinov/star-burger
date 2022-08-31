@@ -5,6 +5,7 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 from locations.distance_operations import get_coordinates, measure_distance
+from locations.models import Location
 
 
 class Restaurant(models.Model):
@@ -66,8 +67,14 @@ class OrderQuerySet(models.QuerySet):
         rest_items = RestaurantMenuItem.objects.filter(
             availability=True
         ).prefetch_related('product').prefetch_related('restaurant')
+        
+        restaurants = Restaurant.objects.all()
+        addresses = [order.address for order in self]
+        restaurant_addresses = [restaurant.address for restaurant in restaurants.iterator()]
+        addresses.extend(restaurant_addresses)
+        locations = Location.objects.filter(address__in=addresses)
         for order in self:
-            order_coordinates = get_coordinates(order.address)
+            order_coordinates = get_coordinates(order.address, locations)
             if not order_coordinates:
                 continue
             order_items = order.items.prefetch_related('product')
@@ -82,7 +89,7 @@ class OrderQuerySet(models.QuerySet):
             )
             restaurants_with_distance = []
             for restaurant in available_restaurants:
-                rest_coordinates = get_coordinates(restaurant.address)
+                rest_coordinates = get_coordinates(restaurant.address, locations)
                 distance = measure_distance(
                     order_coordinates, rest_coordinates
                 )
