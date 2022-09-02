@@ -72,7 +72,7 @@ class OrderQuerySet(models.QuerySet):
         addresses = [order.address for order in self]
         restaurant_addresses = [restaurant.address for restaurant in restaurants.iterator()]
         addresses.extend(restaurant_addresses)
-        locations = Location.objects.filter(address__in=addresses)
+        locations = list(Location.objects.filter(address__in=addresses))
         for order in self:
             order_coordinates = get_coordinates(order.address, locations)
             if not order_coordinates:
