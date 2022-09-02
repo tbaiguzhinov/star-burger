@@ -12,11 +12,9 @@ def measure_distance(coordinates1, coordinates2):
 
 
 def get_coordinates(address, locations):
-    try:
-        db_location = locations.get(address=address)
-        return (db_location.lon, db_location.lat)
-    except Location.DoesNotExist:
-        pass
+    for location in locations:
+        if location.address == address:
+            return location.lon, location.lat
 
     apikey = settings.YANDEX_KEY
     response = requests.get(
