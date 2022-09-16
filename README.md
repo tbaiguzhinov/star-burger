@@ -61,6 +61,8 @@ SECRET_KEY=django-insecure-0if40nf4nf93n4
 
 Зарегистрируйтесь на сайте [Yandex для разработчиков](https://developer.tech.yandex.ru/) и получите API ключ для сервиса "Javascript API и HTTP Геокодер". Добавьте переменную окружения `YANDEX_KEY` в файл `.env` через знак `=`.
 
+Зарегистрируйте аккаунт [rollbar](https://rollbar.com/) и получите токен, добавьте его в переменную окружения `ROLLBAR_TOKEN` в файл `.env` через знак `=`. Также укажите название окружения в переменной окружения `ROLLBAR_ENVIRONMENT`.
+
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
 
 ```sh
@@ -150,6 +152,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_KEY` — API ключ сервиса Yandex "Javascript API и HTTP Геокодер".
+- `ROLLBAR_TOKEN` - Токен сервиса Rollbar для отслеживания ошибок работы сайта.
+- `ROLLBAR_ENVIRONMENT` - Название окружения, которое будет приходить в Rollbar.
 
 ## Цели проекта
 
