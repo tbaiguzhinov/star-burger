@@ -63,6 +63,8 @@ SECRET_KEY=django-insecure-0if40nf4nf93n4
 
 Зарегистрируйте аккаунт [rollbar](https://rollbar.com/) и получите токен, добавьте его в переменную окружения `ROLLBAR_TOKEN` в файл `.env` через знак `=`. Также укажите название окружения в переменной окружения `ROLLBAR_ENVIRONMENT`.
 
+Также добавьте переменную `POSTGRES_URL` для подключения к базе данных Postgres в формате `postgres://USER:PASSWORD@HOST:PORT/NAME`.
+
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
 
 ```sh
@@ -154,6 +156,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `YANDEX_KEY` — API ключ сервиса Yandex "Javascript API и HTTP Геокодер".
 - `ROLLBAR_TOKEN` - Токен сервиса Rollbar для отслеживания ошибок работы сайта.
 - `ROLLBAR_ENVIRONMENT` - Название окружения, которое будет приходить в Rollbar.
+- `POSTGRES_URL` - url для подключения к базе данных Postgres в формате `postgres://USER:PASSWORD@HOST:PORT/NAME`.
 
 ## Цели проекта
 
