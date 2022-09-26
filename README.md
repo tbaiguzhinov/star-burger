@@ -158,6 +158,27 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ROLLBAR_ENVIRONMENT` - Название окружения, которое будет приходить в Rollbar.
 - `POSTGRES_URL` - url для подключения к базе данных Postgres в формате `postgres://USER:PASSWORD@HOST:PORT/NAME`.
 
+## Инструкция по быстрому обновлению кода на сервере
+
+Создайте файл в любом удобном для вас месте на сервере и положите туда следующий код:  
+```sh
+#!/bin/bash
+set -e
+cd '''путь от месторасположение файла до папки star-burger'''
+git pull
+source venv/bin/activate
+pip3 install -r requirements.txt
+npm ci --dev
+./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
+python3 manage.py collectstatic --noinput
+python3 manage.py makemigrations
+python3 manage.py migrate
+systemctl daemon-reload
+systemctl restart '''название systemd сервиса, запускающего gunicorn сайта'''
+systemctl reload nginx
+echo "All successfully deployed"
+```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
