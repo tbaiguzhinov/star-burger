@@ -160,11 +160,11 @@ Parcel будет следить за файлами в каталоге `bundle
 
 ## Инструкция по быстрому обновлению кода на сервере
 
-Создайте файл `file.sh` в любом удобном для вас месте на сервере и положите туда следующий код:  
+Создайте файл `deploy.sh` в любом удобном для вас месте на сервере и положите туда следующий код:  
 ```sh
 #!/bin/bash
 set -e
-cd #путь от месторасположение файла до папки star-burger
+cd ../star-burger #путь от месторасположение файла до папки star-burger
 git pull
 source venv/bin/activate
 pip3 install -r requirements.txt
@@ -174,17 +174,17 @@ python3 manage.py collectstatic --noinput
 python3 manage.py makemigrations
 python3 manage.py migrate
 systemctl daemon-reload
-systemctl restart #название systemd сервиса, запускающего gunicorn сайта
+systemctl restart starbuger.service #название systemd сервиса, запускающего gunicorn сайта
 systemctl reload nginx
 echo "All successfully deployed"
 ```
-После внесения изменений в код, просто запустите скрипт командой.  
-```sh
-./file.sh
-```
 Не забудьте при этом поменять настройки доступа к файлу.  
 ```sh
-chmod ugo+x file.sh
+chmod ugo+x deploy.sh
+```
+После внесения изменений в код, просто запустите скрипт командой.  
+```sh
+./deploy.sh
 ```
 
 ## Цели проекта
