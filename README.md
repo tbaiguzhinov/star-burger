@@ -170,11 +170,11 @@ cd ../star-burger #путь от месторасположение файла �
 git pull
 source venv/bin/activate
 pip3 install -r requirements.txt
-npm ci --dev
+npm ci --also=dev
 ./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 python3 manage.py collectstatic --noinput
-python3 manage.py makemigrations
-python3 manage.py migrate
+python3 manage.py makemigrations --dry-run --check
+python3 manage.py migrate --noinput
 systemctl daemon-reload
 systemctl restart starbuger.service #название systemd сервиса, запускающего gunicorn сайта
 systemctl reload nginx
