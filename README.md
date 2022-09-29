@@ -173,7 +173,6 @@ pip3 install -r requirements.txt
 npm ci --also=dev
 ./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 python3 manage.py collectstatic --noinput
-./manage.py makemigrations --dry-run --check
 python3 manage.py migrate --noinput
 systemctl daemon-reload
 systemctl restart starbuger.service #название systemd сервиса, запускающего gunicorn сайта
